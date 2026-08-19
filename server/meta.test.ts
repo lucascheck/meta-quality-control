@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canAccessResource, decryptToken, encryptToken, normalizeMessagingLimit, normalizeQuality } from "./meta";
+import { canAccessResource, decryptToken, encryptToken, normalizeDeliveryStatus, normalizeMessagingLimit, normalizeQuality, parseDestinations } from "./meta";
 
 describe("Meta integration safeguards", () => {
   it("encrypts and decrypts access tokens without changing the value", () => {
@@ -16,6 +16,12 @@ describe("Meta integration safeguards", () => {
   it("does not allow cross-user resource access", () => {
     expect(canAccessResource(7, 7)).toBe(true);
     expect(canAccessResource(7, 8)).toBe(false);
+  });
+
+  it("parses multiple recipients and normalizes delivery states", () => {
+    expect(parseDestinations("5511999999999, 5511888888888\\n5511777777777")).toEqual(["5511999999999", "5511888888888", "5511777777777"]);
+    expect(normalizeDeliveryStatus("delivered")).toBe("DELIVERED");
+    expect(normalizeDeliveryStatus("unknown-state")).toBe("UNKNOWN");
   });
 
   it("keeps the exact supported display tiers", () => {

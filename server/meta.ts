@@ -72,6 +72,15 @@ export function normalizeQuality(value: unknown): "HIGH" | "MEDIUM" | "LOW" | "U
   return normalized === "HIGH" || normalized === "MEDIUM" || normalized === "LOW" ? normalized : "UNKNOWN";
 }
 
+export function parseDestinations(value: string) {
+  return value.split(/[\\n,]+/).map(item => item.trim()).filter(Boolean).slice(0, 100);
+}
+
+export function normalizeDeliveryStatus(value: unknown) {
+  const normalized = String(value || "UNKNOWN").toUpperCase();
+  return ["SENT", "DELIVERED", "READ", "FAILED"].includes(normalized) ? normalized : "UNKNOWN";
+}
+
 export function normalizeMessagingLimit(value: unknown) {
   const normalized = Number(value);
   if (normalized === 1000 || normalized === 10000 || normalized === 100000) return normalized;
