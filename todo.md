@@ -35,3 +35,8 @@
 - [x] Fazer Qualidade, Limites, Templates e Disparos apontarem para a dashboard principal
 - [x] Selecionar automaticamente a aba correspondente ao clicar no sidebar ou acessar a âncora
 - [x] Manter Configuração como rota própria e validar a navegação corrigida
+
+- [x] Mover o formulário de primeira conexão para a página Configuração do sidebar
+- [x] Ocultar o painel de primeiro passo da dashboard quando existir conexão cadastrada
+- [x] Adicionar atalho de engrenagem ao lado do status para abrir Configuração e adicionar nova conexão
+- [x] Validar estados sem conexão, conectado e criação de nova conexão
