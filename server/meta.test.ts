@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { canAccessResource, decryptToken, encryptToken, normalizeDeliveryStatus, normalizeMessagingLimit, normalizeQuality, parseDestinations } from "./meta";
+import { describe, expect, it, vi } from "vitest";
+import { canAccessResource, decryptToken, encryptToken, listPhoneNumbers, normalizeDeliveryStatus, normalizeMessagingLimit, normalizePhoneNumber, normalizeQuality, parseDestinations } from "./meta";
 
 describe("Meta integration safeguards", () => {
   it("encrypts and decrypts access tokens without changing the value", () => {
@@ -22,6 +22,20 @@ describe("Meta integration safeguards", () => {
     expect(parseDestinations("5511999999999, 5511888888888\\n5511777777777")).toEqual(["5511999999999", "5511888888888", "5511777777777"]);
     expect(normalizeDeliveryStatus("delivered")).toBe("DELIVERED");
     expect(normalizeDeliveryStatus("unknown-state")).toBe("UNKNOWN");
+  });
+
+  it("does not request the unsupported messaging_limit field", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: [] }) });
+    vi.stubGlobal("fetch", fetchMock);
+    await listPhoneNumbers({ accessToken: "token", wabaId: "waba" });
+    const requestedUrl = String(fetchMock.mock.calls[0]?.[0]);
+    expect(requestedUrl).toContain("quality_rating");
+    expect(requestedUrl).not.toContain("messaging_limit");
+    vi.unstubAllGlobals();
+  });
+
+  it("maps a phone number without messaging_limit without failing", () => {
+    expect(normalizePhoneNumber({ id: "phone-1", verified_name: "Operação", quality_rating: "HIGH" })).toMatchObject({ metaId: "phone-1", verifiedName: "Operação", qualityRating: "HIGH", messagingLimit: null });
   });
 
   it("keeps the exact supported display tiers", () => {

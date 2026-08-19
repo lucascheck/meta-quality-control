@@ -40,3 +40,10 @@
 - [x] Ocultar o painel de primeiro passo da dashboard quando existir conexão cadastrada
 - [x] Adicionar atalho de engrenagem ao lado do status para abrir Configuração e adicionar nova conexão
 - [x] Validar estados sem conexão, conectado e criação de nova conexão
+
+- [x] Corrigir erro da Meta (#100) causado pela solicitação do campo inexistente messaging_limit
+- [x] Tornar a sincronização tolerante à ausência de dados de limite e preservar fallback seguro
+- [x] Adicionar teste para resposta sem messaging_limit e validar sincronização após a correção
+
+- [x] Cobrir o mapeamento da sincronização quando phone_numbers não retorna messaging_limit
+- [x] Confirmar que a mutation de sincronização consegue persistir o número com limite opcional

@@ -42,7 +42,9 @@ async function graph<T>(path: string, token: string, init?: RequestInit): Promis
 
 export async function listPhoneNumbers(config: MetaConnectionConfig) {
   const version = config.apiVersion || "v26.0";
-  return graph<{ data: Array<Record<string, unknown>> }>(`${version}/${config.wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,status,quality_rating,messaging_limit`, config.accessToken);
+  // O endpoint de phone_numbers não expõe messaging_limit de forma consistente.
+  // O tier/limite permanece opcional e é preenchido apenas quando outra fonte compatível o fornecer.
+  return graph<{ data: Array<Record<string, unknown>> }>(`${version}/${config.wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,status,quality_rating`, config.accessToken);
 }
 
 export async function listTemplates(config: MetaConnectionConfig) {
@@ -65,6 +67,17 @@ export async function sendTemplate(config: MetaConnectionConfig, phoneNumberId: 
       },
     }),
   });
+}
+
+export function normalizePhoneNumber(item: Record<string, unknown>) {
+  return {
+    metaId: String(item.id || ""),
+    displayPhoneNumber: String(item.display_phone_number || ""),
+    verifiedName: String(item.verified_name || ""),
+    status: String(item.status || ""),
+    qualityRating: normalizeQuality(item.quality_rating),
+    messagingLimit: normalizeMessagingLimit(item.messaging_limit),
+  };
 }
 
 export function normalizeQuality(value: unknown): "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN" {

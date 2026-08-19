@@ -4,7 +4,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { getConnection, getDashboardMetrics, getDb, listConnections, listDispatches, listPhoneNumbers, listQualityHistory, listTemplates, messageDispatches, metaConnections, phoneNumbers, qualityHistory, templates } from "./db";
-import { decryptToken, encryptToken, listPhoneNumbers as fetchPhoneNumbers, listTemplates as fetchTemplates, normalizeMessagingLimit, normalizeQuality, sendTemplate } from "./meta";
+import { decryptToken, encryptToken, listPhoneNumbers as fetchPhoneNumbers, listTemplates as fetchTemplates, normalizePhoneNumber, sendTemplate } from "./meta";
 import { and, eq } from "drizzle-orm";
 
 const connectionInput = z.object({ label: z.string().min(2).max(120), wabaId: z.string().min(3).max(80), accessToken: z.string().min(10), phoneNumberIds: z.array(z.string().min(3)).min(1), apiVersion: z.string().default("v26.0") });
@@ -31,10 +31,10 @@ export const appRouter = router({
       const config = { accessToken: decryptToken(connection.accessTokenEncrypted), wabaId: decryptToken(connection.wabaIdEncrypted), apiVersion: connection.apiVersion };
       const [numberResponse, templateResponse] = await Promise.all([fetchPhoneNumbers(config), fetchTemplates(config)]);
       for (const item of numberResponse.data || []) {
-        const metaId = String(item.id); const rating = normalizeQuality(item.quality_rating); const limit = normalizeMessagingLimit(item.messaging_limit);
+        const normalized = normalizePhoneNumber(item); const metaId = normalized.metaId; const rating = normalized.qualityRating; const limit = normalized.messagingLimit;
         const existing = await db.select({ id: phoneNumbers.id, qualityRating: phoneNumbers.qualityRating }).from(phoneNumbers).where(and(eq(phoneNumbers.userId, ctx.user.id), eq(phoneNumbers.metaId, metaId))).limit(1);
-        if (existing[0]) { await db.update(phoneNumbers).set({ displayPhoneNumber: String(item.display_phone_number || ""), verifiedName: String(item.verified_name || ""), status: String(item.status || ""), qualityRating: rating, messagingLimit: limit, lastSyncedAt: new Date() }).where(eq(phoneNumbers.id, existing[0].id)); if (existing[0].qualityRating !== rating) await db.insert(qualityHistory).values({ userId: ctx.user.id, phoneNumberId: existing[0].id, qualityRating: rating }); }
-        else { const [created] = await db.insert(phoneNumbers).values({ userId: ctx.user.id, connectionId: connection.id, metaId, displayPhoneNumber: String(item.display_phone_number || ""), verifiedName: String(item.verified_name || ""), status: String(item.status || ""), qualityRating: rating, messagingLimit: limit, lastSyncedAt: new Date() }).$returningId(); await db.insert(qualityHistory).values({ userId: ctx.user.id, phoneNumberId: created.id, qualityRating: rating }); }
+        if (existing[0]) { await db.update(phoneNumbers).set({ displayPhoneNumber: normalized.displayPhoneNumber, verifiedName: normalized.verifiedName, status: normalized.status, qualityRating: rating, messagingLimit: limit, lastSyncedAt: new Date() }).where(eq(phoneNumbers.id, existing[0].id)); if (existing[0].qualityRating !== rating) await db.insert(qualityHistory).values({ userId: ctx.user.id, phoneNumberId: existing[0].id, qualityRating: rating }); }
+        else { const [created] = await db.insert(phoneNumbers).values({ userId: ctx.user.id, connectionId: connection.id, metaId, displayPhoneNumber: normalized.displayPhoneNumber, verifiedName: normalized.verifiedName, status: normalized.status, qualityRating: rating, messagingLimit: limit, lastSyncedAt: new Date() }).$returningId(); await db.insert(qualityHistory).values({ userId: ctx.user.id, phoneNumberId: created.id, qualityRating: rating }); }
       }
       await db.delete(templates).where(and(eq(templates.userId, ctx.user.id), eq(templates.connectionId, connection.id)));
       for (const item of templateResponse.data || []) await db.insert(templates).values({ userId: ctx.user.id, connectionId: connection.id, metaId: String(item.id || ""), name: String(item.name || ""), status: String(item.status || ""), category: String(item.category || ""), language: String((item.language as { code?: string })?.code || item.language || ""), componentsJson: JSON.stringify(item.components || []) });
