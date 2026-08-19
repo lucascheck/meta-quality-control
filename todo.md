@@ -31,3 +31,7 @@
 - [x] Adicionar efeito de cor e destaque ao passar o mouse sobre os itens do sidebar
 - [x] Adicionar transição suave entre páginas/rotas com suporte a redução de movimento
 - [x] Validar microinterações em desktop e mobile e atualizar testes/checkpoint
+
+- [x] Fazer Qualidade, Limites, Templates e Disparos apontarem para a dashboard principal
+- [x] Selecionar automaticamente a aba correspondente ao clicar no sidebar ou acessar a âncora
+- [x] Manter Configuração como rota própria e validar a navegação corrigida

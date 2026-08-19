@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { trpc } from "@/lib/trpc";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -23,7 +24,19 @@ export default function Home() {
   const templates = trpc.dashboard.templates.useQuery();
   const dispatches = trpc.dashboard.dispatches.useQuery();
   const connections = trpc.connections.list.useQuery();
+  const [location] = useLocation();
   const [activeTab, setActiveTab] = useState("overview");
+  useEffect(() => {
+    const applyHash = () => {
+      const hash = window.location.hash.replace(/^#/, "");
+      if (hash === "quality" || hash === "limits") setActiveTab("numbers");
+      else if (hash === "templates" || hash === "dispatch") setActiveTab(hash);
+      else setActiveTab("overview");
+    };
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, [location]);
   const [connectionForm, setConnectionForm] = useState({ label: "Minha operação", wabaId: "", accessToken: "", phoneNumberIds: "" });
   const [dispatchForm, setDispatchForm] = useState({ phoneNumberId: "", templateName: "", languageCode: "pt_BR", destination: "", variables: "" });
   const createConnection = trpc.connections.create.useMutation({ onSuccess: () => { toast.success("Conexão protegida criada"); connections.refetch(); setConnectionForm({ label: "Minha operação", wabaId: "", accessToken: "", phoneNumberIds: "" }); }, onError: error => toast.error(error.message) });

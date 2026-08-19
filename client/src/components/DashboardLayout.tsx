@@ -29,10 +29,10 @@ import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Visão geral", path: "/" },
-  { icon: Activity, label: "Qualidade", path: "/quality" },
-  { icon: Gauge, label: "Limites", path: "/limits" },
-  { icon: FileText, label: "Templates", path: "/templates" },
-  { icon: Send, label: "Disparos", path: "/dispatch" },
+  { icon: Activity, label: "Qualidade", path: "/#quality" },
+  { icon: Gauge, label: "Limites", path: "/#limits" },
+  { icon: FileText, label: "Templates", path: "/#templates" },
+  { icon: Send, label: "Disparos", path: "/#dispatch" },
   { icon: Settings2, label: "Configuração", path: "/settings" },
 ];
 
@@ -110,11 +110,14 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const [hash, setHash] = useState(() => window.location.hash);
   const { state, toggleSidebar } = useSidebar();
+  useEffect(() => { const onHashChange = () => setHash(window.location.hash); window.addEventListener("hashchange", onHashChange); return () => window.removeEventListener("hashchange", onHashChange); }, []);
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  const activePath = hash ? `/#${hash.replace(/^#/, "")}` : location;
+  const activeMenuItem = menuItems.find(item => item.path === activePath);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -188,7 +191,7 @@ function DashboardLayoutContent({
                   <SidebarMenuItem key={item.path}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => setLocation(item.path)}
+                      onClick={() => item.path.startsWith("/#") ? window.location.assign(item.path) : setLocation(item.path)}
                       tooltip={item.label}
                       className={`h-10 rounded-xl font-normal transition-all duration-200 ease-out hover:bg-indigo-50 hover:text-indigo-700 hover:shadow-sm hover:[&>svg]:text-indigo-600 active:scale-[0.98] ${isActive ? "bg-indigo-50 text-indigo-700 shadow-sm [&>svg]:text-indigo-600" : ""}`}
                     >
