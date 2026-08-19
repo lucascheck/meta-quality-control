@@ -22,6 +22,20 @@
       "when": 1787157291089,
       "tag": "0002_acoustic_malice",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787160853014,
+      "tag": "0003_bent_pestilence",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1787161113831,
+      "tag": "0004_acoustic_zaladane",
+      "breakpoints": true
     }
   ]
 }

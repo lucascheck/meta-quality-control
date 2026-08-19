@@ -34,6 +34,18 @@ describe("Meta integration safeguards", () => {
     vi.unstubAllGlobals();
   });
 
+  it("maps Meta quality colors to dashboard ratings and preserves the raw value", () => {
+    expect(normalizeQuality("GREEN")).toBe("HIGH");
+    expect(normalizeQuality("YELLOW")).toBe("MEDIUM");
+    expect(normalizeQuality("RED")).toBe("LOW");
+    expect(normalizeQuality("NA")).toBe("UNKNOWN");
+    expect(normalizePhoneNumber({ id: "phone-2", quality_rating: "GREEN" }).qualityRaw).toBe("GREEN");
+  });
+
+  it("keeps missing quality_rating explicit instead of inventing a rating", () => {
+    expect(normalizePhoneNumber({ id: "phone-3" })).toMatchObject({ qualityRating: "UNKNOWN", qualityRaw: null });
+  });
+
   it("maps a phone number without messaging_limit without failing", () => {
     expect(normalizePhoneNumber({ id: "phone-1", verified_name: "Operação", quality_rating: "HIGH" })).toMatchObject({ metaId: "phone-1", verifiedName: "Operação", qualityRating: "HIGH", messagingLimit: null });
   });

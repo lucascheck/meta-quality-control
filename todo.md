@@ -47,3 +47,9 @@
 
 - [x] Cobrir o mapeamento da sincronização quando phone_numbers não retorna messaging_limit
 - [x] Confirmar que a mutation de sincronização consegue persistir o número com limite opcional
+
+- [x] Ampliar a consulta de phone numbers com campos compatíveis de qualidade e diagnóstico
+- [x] Normalizar quality_rating e possíveis estruturas alternativas sem transformar dados válidos em UNKNOWN
+- [x] Armazenar e exibir a origem, última leitura e diagnóstico quando a Meta não fornecer rating
+- [x] Exibir mais informações sincronizadas da Meta na dashboard e na página de números
+- [x] Adicionar testes para qualidade HIGH/MEDIUM/LOW, estruturas alternativas e ausência de dados

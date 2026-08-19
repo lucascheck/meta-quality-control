@@ -47,6 +47,11 @@ export async function listPhoneNumbers(config: MetaConnectionConfig) {
   return graph<{ data: Array<Record<string, unknown>> }>(`${version}/${config.wabaId}/phone_numbers?fields=id,display_phone_number,verified_name,status,quality_rating`, config.accessToken);
 }
 
+export async function getPhoneNumberDetails(config: MetaConnectionConfig, phoneNumberId: string) {
+  const version = config.apiVersion || "v26.0";
+  return graph<Record<string, unknown>>(`${version}/${phoneNumberId}?fields=id,verified_name,display_phone_number,status,quality_rating,code_verification_status,throughput`, config.accessToken);
+}
+
 export async function listTemplates(config: MetaConnectionConfig) {
   const version = config.apiVersion || "v26.0";
   return graph<{ data: Array<Record<string, unknown>> }>(`${version}/${config.wabaId}/message_templates?fields=id,name,status,category,language,components,quality_score`, config.accessToken);
@@ -76,13 +81,24 @@ export function normalizePhoneNumber(item: Record<string, unknown>) {
     verifiedName: String(item.verified_name || ""),
     status: String(item.status || ""),
     qualityRating: normalizeQuality(item.quality_rating),
+    qualityRaw: normalizeQualityRaw(item.quality_rating),
+    codeVerificationStatus: String(item.code_verification_status || "") || null,
+    throughputLevel: String((item.throughput as { level?: string } | undefined)?.level || item.throughput || "") || null,
     messagingLimit: normalizeMessagingLimit(item.messaging_limit),
   };
 }
 
+export function normalizeQualityRaw(value: unknown) {
+  const normalized = String(value || "").trim().toUpperCase();
+  return normalized || null;
+}
+
 export function normalizeQuality(value: unknown): "HIGH" | "MEDIUM" | "LOW" | "UNKNOWN" {
-  const normalized = String(value || "").toUpperCase();
-  return normalized === "HIGH" || normalized === "MEDIUM" || normalized === "LOW" ? normalized : "UNKNOWN";
+  const normalized = normalizeQualityRaw(value);
+  if (normalized === "HIGH" || normalized === "GREEN") return "HIGH";
+  if (normalized === "MEDIUM" || normalized === "YELLOW") return "MEDIUM";
+  if (normalized === "LOW" || normalized === "RED") return "LOW";
+  return "UNKNOWN";
 }
 
 export function parseDestinations(value: string) {
