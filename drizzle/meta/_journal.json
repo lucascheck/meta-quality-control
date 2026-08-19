@@ -1,5 +1,27 @@
 {
   "version": "7",
   "dialect": "mysql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1787151735430,
+      "tag": "0000_curved_nekra",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1787156943227,
+      "tag": "0001_magical_the_hunter",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1787157291089,
+      "tag": "0002_acoustic_malice",
+      "breakpoints": true
+    }
+  ]
 }
