@@ -27,3 +27,7 @@
 - [x] Criar rotas próprias para Visão geral, Qualidade, Limites, Templates, Disparos e Configuração
 - [x] Fazer cada item do sidebar navegar para sua página e destacar a seção ativa
 - [x] Validar navegação, rotas, responsividade e testes após a alteração
+
+- [x] Adicionar efeito de cor e destaque ao passar o mouse sobre os itens do sidebar
+- [x] Adicionar transição suave entre páginas/rotas com suporte a redução de movimento
+- [x] Validar microinterações em desktop e mobile e atualizar testes/checkpoint
