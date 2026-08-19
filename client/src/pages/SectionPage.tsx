@@ -1,0 +1,40 @@
+import DashboardLayout from "@/components/DashboardLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { FileText, Gauge, MessageSquare, Settings2, ShieldCheck, Activity, Send } from "lucide-react";
+import { trpc } from "@/lib/trpc";
+
+const sectionConfig = {
+  quality: { eyebrow: "Monitoramento", title: "Qualidade dos números", description: "Acompanhe rating, histórico e sinais de degradação por linha.", icon: Activity },
+  limits: { eyebrow: "Capacidade", title: "Limites de disparo", description: "Veja o tier de cada número e o consumo registrado pelo painel.", icon: Gauge },
+  templates: { eyebrow: "Biblioteca", title: "Templates da operação", description: "Consulte os templates recebidos da Meta e seus status oficiais.", icon: FileText },
+  dispatch: { eyebrow: "Execução", title: "Central de disparos", description: "Envie templates aprovados para um ou mais destinatários.", icon: Send },
+  settings: { eyebrow: "Governança", title: "Configuração", description: "Gerencie conexões, segurança e parâmetros da operação.", icon: Settings2 },
+} as const;
+
+const tier = (value?: number | null) => value === 1000 ? "1k" : value === 10000 ? "10k" : value === 100000 ? "100k" : "—";
+
+export default function SectionPage({ section }: { section: keyof typeof sectionConfig }) {
+  const config = sectionConfig[section];
+  const Icon = config.icon;
+  const numbers = trpc.dashboard.numbers.useQuery(undefined, { enabled: section === "quality" || section === "limits" });
+  const templates = trpc.dashboard.templates.useQuery(undefined, { enabled: section === "templates" || section === "dispatch" });
+  const dispatches = trpc.dashboard.dispatches.useQuery(undefined, { enabled: section === "dispatch" });
+  const connections = trpc.connections.list.useQuery(undefined, { enabled: section === "settings" });
+
+  return <DashboardLayout><div className="min-h-screen -m-4 bg-[#f7f8fa] p-5 text-slate-900 md:p-8"><div className="mx-auto max-w-[1500px] space-y-8"><header className="flex items-end justify-between"><div><div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.22em] text-indigo-600"><Icon className="h-3.5 w-3.5" /> {config.eyebrow}</div><h1 className="font-display text-4xl font-semibold tracking-[-0.04em] text-slate-950">{config.title}</h1><p className="mt-2 text-sm text-slate-500">{config.description}</p></div><div className="rounded-2xl bg-white p-3 text-indigo-600 shadow-sm"><Icon className="h-5 w-5" /></div></header>
+
+{section === "quality" && <Card className="rounded-2xl border-0 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.05)]"><CardHeader><CardTitle className="font-display">Radar de qualidade</CardTitle></CardHeader><CardContent className="space-y-4">{(numbers.data || []).map(number => <div key={number.id} className="rounded-xl border border-slate-100 p-5"><div className="flex items-center justify-between"><div><p className="font-semibold">{number.verifiedName || "Número sem nome"}</p><p className="mt-1 text-xs text-slate-400">{number.displayPhoneNumber || number.metaId}</p></div><Badge variant="outline" className={number.qualityRating === "HIGH" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : number.qualityRating === "LOW" ? "border-rose-200 bg-rose-50 text-rose-700" : "border-amber-200 bg-amber-50 text-amber-700"}>{number.qualityRating}</Badge></div><div className="mt-4 flex items-center gap-3 text-xs text-slate-500"><ShieldCheck className="h-4 w-4 text-emerald-500" />Status {number.status || "—"}<span className="text-slate-300">•</span>Última leitura {number.lastSyncedAt ? new Date(number.lastSyncedAt).toLocaleString("pt-BR") : "—"}</div></div>)}{!numbers.data?.length && <EmptyState text="Nenhum número sincronizado ainda." />}</CardContent></Card>}
+
+{section === "limits" && <Card className="rounded-2xl border-0 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.05)]"><CardHeader><CardTitle className="font-display">Consumo por número</CardTitle></CardHeader><CardContent className="space-y-4">{(numbers.data || []).map(number => <div key={number.id} className="rounded-xl border border-slate-100 p-5"><div className="flex justify-between"><div><p className="font-semibold">{number.displayPhoneNumber || number.metaId}</p><p className="mt-1 text-xs text-slate-400">Tier atual: <span className="font-mono">{tier(number.messagingLimit)}</span> mensagens/dia</p></div><p className="font-display text-xl font-semibold">{number.currentUsage}</p></div><Progress className="mt-4 h-2" value={number.messagingLimit ? Math.min(100, (number.currentUsage / number.messagingLimit) * 100) : 0} /><p className="mt-2 text-xs text-slate-400">{number.currentUsage} de {tier(number.messagingLimit)} mensagens registradas</p></div>)}{!numbers.data?.length && <EmptyState text="Nenhum limite disponível." />}</CardContent></Card>}
+
+{section === "templates" && <Card className="rounded-2xl border-0 bg-white shadow-[0_12px_35px_rgba(15,23,42,0.05)]"><CardHeader><CardTitle className="font-display">Templates sincronizados</CardTitle></CardHeader><CardContent className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">{(templates.data || []).map(template => <div key={template.id} className="rounded-xl border border-slate-100 p-5"><div className="flex items-start justify-between gap-3"><div><p className="font-medium">{template.name}</p><p className="mt-1 text-xs text-slate-400">{template.category || "—"} · {template.language || "—"}</p></div><Badge variant="outline">{template.status}</Badge></div></div>)}{!templates.data?.length && <EmptyState text="Nenhum template sincronizado." />}</CardContent></Card>}
+
+{section === "dispatch" && <div className="grid gap-5 lg:grid-cols-[1fr_.8fr]"><Card className="rounded-2xl border-0 bg-slate-950 text-white shadow-xl"><CardContent className="p-8"><Send className="h-7 w-7 text-indigo-300" /><h2 className="mt-6 font-display text-3xl font-semibold">Disparo controlado</h2><p className="mt-3 max-w-md text-sm leading-6 text-slate-400">Selecione remetente, template aprovado e destinatários na aba operacional da visão geral.</p><a href="/#dispatch" className="mt-7 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-semibold text-slate-950">Abrir formulário de envio</a></CardContent></Card><Card className="rounded-2xl border-0 bg-white shadow-sm"><CardHeader><CardTitle className="font-display">Últimas execuções</CardTitle></CardHeader><CardContent className="space-y-3">{(dispatches.data || []).slice(0, 5).map(item => <div key={item.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-4"><div className="flex items-center gap-3"><MessageSquare className="h-4 w-4 text-indigo-500" /><div><p className="text-sm font-medium">{item.templateName}</p><p className="text-xs text-slate-400">{item.destination}</p></div></div><Badge variant="outline">{item.status}</Badge></div>)}{!dispatches.data?.length && <EmptyState text="Nenhum disparo registrado." />}</CardContent></Card></div>}
+
+{section === "settings" && <Card className="rounded-2xl border-0 bg-white shadow-sm"><CardHeader><CardTitle className="font-display">Conexões Meta</CardTitle></CardHeader><CardContent className="space-y-3">{(connections.data || []).map(connection => <div key={connection.id} className="flex items-center justify-between rounded-xl border border-slate-100 p-5"><div><p className="font-semibold">{connection.label}</p><p className="mt-1 text-xs text-slate-400">API {connection.apiVersion} · atualizada {new Date(connection.updatedAt).toLocaleString("pt-BR")}</p></div><Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-emerald-700">Protegida</Badge></div>)}{!connections.data?.length && <EmptyState text="Nenhuma conexão configurada." />}</CardContent></Card>}
+</div></div></DashboardLayout>;
+}
+
+function EmptyState({ text }: { text: string }) { return <div className="col-span-full rounded-xl border border-dashed border-slate-200 p-10 text-center text-sm text-slate-400">{text}</div>; }

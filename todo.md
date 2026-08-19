@@ -23,3 +23,7 @@
 - [x] Adicionar estados explícitos de loading e erro nas áreas principais
 - [x] Criar testes de isolamento, disparo e restrição dos tiers suportados
 - [x] Validar fluxos críticos de sucesso e erro no navegador
+
+- [x] Criar rotas próprias para Visão geral, Qualidade, Limites, Templates, Disparos e Configuração
+- [x] Fazer cada item do sidebar navegar para sua página e destacar a seção ativa
+- [x] Validar navegação, rotas, responsividade e testes após a alteração

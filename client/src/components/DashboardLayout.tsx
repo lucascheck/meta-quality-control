@@ -29,11 +29,11 @@ import { Button } from "./ui/button";
 
 const menuItems = [
   { icon: LayoutDashboard, label: "Visão geral", path: "/" },
-  { icon: Activity, label: "Qualidade", path: "/#quality" },
-  { icon: Gauge, label: "Limites", path: "/#limits" },
-  { icon: FileText, label: "Templates", path: "/#templates" },
-  { icon: Send, label: "Disparos", path: "/#dispatch" },
-  { icon: Settings2, label: "Configuração", path: "/#settings" },
+  { icon: Activity, label: "Qualidade", path: "/quality" },
+  { icon: Gauge, label: "Limites", path: "/limits" },
+  { icon: FileText, label: "Templates", path: "/templates" },
+  { icon: Send, label: "Disparos", path: "/dispatch" },
+  { icon: Settings2, label: "Configuração", path: "/settings" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
